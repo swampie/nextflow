@@ -109,4 +109,28 @@ final class BitbucketServerRepositoryProvider extends RepositoryProvider {
         def url = getContentUrl(path)
         invoke(url)?.getBytes()
     }
+
+    @Override
+    List<TagInfo> getTags() {
+        final result = new ArrayList<TagInfo>()
+        final url = "$config.endpoint/api/1.0/projects/$project/repos/$repository/tags"
+        final mapper = { Map entry -> result.add( new TagInfo(entry.name, entry.target?.hash) ) }
+        invokeAndResponseWithPaging(url, mapper)
+        return result
+    }
+
+    /**
+     * https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/refs/branches
+     *
+     * @return A list of {@link BranchInfo}
+     */
+    @Override
+    List<BranchInfo> getBranches() {
+        final result = new ArrayList<BranchInfo>()
+        final url = "$config.endpoint/api/1.0/projects/$project/repos/$repository/branches"
+        final mapper = { Map entry -> result.add( new BranchInfo(entry.name, entry.target?.hash) ) }
+        invokeAndResponseWithPaging(url, mapper)
+
+        return result
+    }
 }
